@@ -7,7 +7,7 @@ namespace sqlninja
     {
         static void Main(string[] args)
         {
-            string FILE_WORDPRESS_XML = "sqlblogninja.wordpress.xml";
+            string FILE_WORDPRESS_XML = "input\\sqlblogninja.wordpress.xml";
 
             Console.WriteLine("Hello World!");
 
