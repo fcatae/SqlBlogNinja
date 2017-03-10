@@ -3,33 +3,22 @@
 open System.Xml.Linq
 open System.Linq
 
-let FILE_WORDPRESS_XML = "input\\sample.xml"
+// XML Namespaces
+let xmlNS = XName.Get
+let xmlWP name = XName.Get (name, "http://wordpress.org/export/1.2/")
 
-let doc = XDocument.Load FILE_WORDPRESS_XML 
+// XML Function Utils
+let GetDescendent name (doc: XDocument) = doc.Descendants(xmlNS name)
+let GetChild (item: XElement) name = item.Element(xmlNS name).Value
 
-let de = doc.Elements()
+// Verify if the item is a post indeed
+let IsPost (item: XElement) = (item.Element(xmlWP "post_type").Value = "post")
 
-de.First().
+// Just do it!
 
-
-let xName = XName.Get
-
-de.Descendants(xName "item") 
-|> Seq.map(fun (x: XElement)-> x.Elements(xName "title").First().Name )
-
-let (a:XElement) = null
-a.
-
-let ShowNames (els: seq<XElement>) = els |> Seq.map(fun x-> x.Name.ToString() )
-
-de.Elements(xName "rss")  |>  ShowNames
-;;
-
-let GetChild name (elx: XElement) = elx.Elements(xName name)
-
-let (many: XElement seq) = de.First().Elements().First().Elements() 
-many.Count()
-
-de.
-
-
+"input\\sqlblogninja.wordpress.xml" 
+    |> XDocument.Load
+    |> GetDescendent "item"
+    |> Seq.filter( IsPost )
+    |> Seq.map( fun item -> 
+        (GetChild item "title" , GetChild item "link" ) )
