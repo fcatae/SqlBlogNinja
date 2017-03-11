@@ -11,7 +11,7 @@ let ListFolders = FOLDERPATH |> Directory.EnumerateDirectories
 ListFolders.ToArray()
 
 
-let folderfullpathname = """output\folders\2009-12-27-estatsticas"""
+let folderfullpathname = """output\folders\2009-09-21-cache-de-disco"""
 
 let CreateImageDirectory name =
     let imagename = (name + "\\images")
@@ -31,14 +31,26 @@ reg.Matches "'http://img.png'"
 reg.Matches "'http://f/img.png'"
 let CreateImageName basepath imagepath = (sprintf "%s\\images\\%s" basepath imagepath)
 
-let imagepath = """output\folders\2009-12-27-estatsticas"""
-                    |> CreateImageDirectory
-let matches = 
-    folderfullpathname 
-    |> ReadIndexHtml
-    |> reg.Matches 
-    |> Seq.cast<Match>
-    |> Seq.map( fun m -> (m.Value, m.Groups.[2].Value, imagepath + "\\" +  m.Groups.[2].Value) )
-    |> Seq.iter( fun (_,_,path) -> (File.Create path) |> ignore )
+
+
+
+let CreateAllImages basefolder =
+    let imagepath = basefolder
+                        |> CreateImageDirectory
+    let matches = 
+        basefolder 
+        |> ReadIndexHtml
+        |> reg.Matches 
+        |> Seq.cast<Match>
+        |> Seq.map( fun m -> (m.Value, m.Groups.[2].Value, imagepath + "\\" +  m.Groups.[2].Value) )
+        |> Seq.iter( fun (_,_,path) -> (File.Create path) |> ignore )
+    
+    imagepath
+
+
+FOLDERPATH 
+    |> Directory.EnumerateDirectories
+    |> Seq.map( CreateAllImages )
+    |> Seq.toArray
 
 
