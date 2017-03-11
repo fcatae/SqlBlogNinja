@@ -74,10 +74,8 @@ let elementsWithContent =
     |> Seq.filter( IsPost )
     |> Seq.filter( IsPublished )
     |> Seq.map( FindTitleLinkContent )
-    |> Seq.take 1
-
-elementsWithContent.ToArray()
-
+    //|> Seq.take 1
     |> Seq.iter( SaveContent )
     
+
 
