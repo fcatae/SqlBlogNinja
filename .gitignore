@@ -3,3 +3,5 @@ obj/
 .paket/paket.exe
 paket.lock
 /packages
+
+output/folders
