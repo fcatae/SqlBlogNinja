@@ -4,7 +4,7 @@ open System.Linq;
 open System.Text.RegularExpressions
 
 let FOLDERPATH = "output\\folders\\"
-let INDEXFILENAME = "readme.md"
+let INDEXFILENAME = "readme.html"
 
 let ListFolders = FOLDERPATH |> Directory.EnumerateDirectories
 

@@ -53,7 +53,7 @@ let CreateFileName (linkbase: string) (link: string)  =
 
 let SaveContent (title, link, content)=
     let name = (CreateFileName "https://blogs.msdn.microsoft.com/fcatae/" link)
-    let filename = sprintf "output\\folders\\%s\\readme.md" name
+    let filename = sprintf "output\\folders\\%s\\readme.html" name
     let header = sprintf "<a link='%s'>%s</a>" link title
     File.WriteAllLines( filename , [header; content]) 
 
@@ -74,4 +74,4 @@ let elementsWithContent = elementsWithContentDefinition.ToArray()
 
 elementsWithContent
     |> Seq.map( CreateFolder >> SaveContent )
-
+    |> Seq.iter( ignore )

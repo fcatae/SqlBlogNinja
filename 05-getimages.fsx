@@ -13,7 +13,7 @@ open System.Linq;
 open System.Text.RegularExpressions
 
 let FOLDERPATH = "output\\folders\\"
-let INDEXFILENAME = "readme.md"
+let INDEXFILENAME = "readme.html"
 
 let ListFolders = FOLDERPATH |> Directory.EnumerateDirectories
 
@@ -51,6 +51,7 @@ let DownloadFile (src, _, dst) =
 
 DownloadFile ("https://msdnshared.blob.core.windows.net/media/TNBlogsFS/BlogFileStorage/blogs_msdn/fcatae/WindowsLiveWriter/AmecnicadeumDiskDrive_14125/image_2.png",1, "output\\teste.png")
 
+let RewritePage page = reg.Replace(page,  "\"images\\$2\"") 
 let CreateAllImages basefolder =
     let imagepath = basefolder
                         |> CreateImageDirectory
@@ -64,12 +65,20 @@ let CreateAllImages basefolder =
         |> Seq.map( DownloadFile )        
         |> Seq.iter( ignore )
 
-    basefolder 
-        |> ReadIndexHtml
-        |> RewritePage
-        |> ignore
-
     matches
+
+let DoRewritePage basefolder = 
+    basefolder
+    |> ReadIndexHtml 
+    |> RewritePage
+    |> fun content -> File.WriteAllText(basefolder + "\\readme.md", content)
+    |> ignore
+
+let RewriteAllPages (rootfolder: string) =
+
+    rootfolder 
+    |> Directory.EnumerateDirectories
+    |> Seq.iter( DoRewritePage )
 
 
 FOLDERPATH 
@@ -77,13 +86,14 @@ FOLDERPATH
     |> Seq.map( CreateAllImages )
     |> Seq.iter( ignore )
 
-let RewritePage page = reg.Replace(page,  "\"$2\"") 
+FOLDERPATH
+    |> RewriteAllPages
 
 let basefolder= "output\\folders\\2009-08-21-a-mecnica-de-um-disk-drive"
 
 basefolder
     |> ReadIndexHtml
     |> RewritePage
-    |> fun content -> File.WriteAllText(basefolder + "\\index.md", content)
+    |> fun content -> File.WriteAllText(basefolder + "\\readme.md", content)
     |> ignore
 
