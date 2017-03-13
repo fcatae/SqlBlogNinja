@@ -1,8 +1,6 @@
 Index
 =======
 
-[A mecânica de um Disk Drive](posts/2009-08-21-a-mecnica-de-um-disk-drive/)
-
   [A mecânica de um Disk Drive](posts/2009-08-21-a-mecnica-de-um-disk-drive/readme.md)
   
   [Introdução](2009-08-21-introduo)
