@@ -3,5 +3,3 @@ bin/
 obj/
 .paket/paket.exe
 paket.lock
-
-ignore/
