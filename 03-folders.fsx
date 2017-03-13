@@ -1,13 +1,3 @@
-
-
-#r """packages\FSharp.Data\lib\net40\FSharp.Data.dll"""
-
-open FSharp.Data;
-
-Http.Request("https://blogs.msdn.microsoft.com/fcatae/2009/08/21/a-mecnica-de-um-disk-drive/")
-
-
-
 #r "System.Xml.Linq.dll"
 open System.Xml.Linq
 open System.Linq
@@ -84,5 +74,4 @@ let elementsWithContent = elementsWithContentDefinition.ToArray()
 
 elementsWithContent
     |> Seq.map( CreateFolder >> SaveContent )
-    |> Seq.last
 

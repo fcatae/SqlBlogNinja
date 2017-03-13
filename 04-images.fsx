@@ -10,15 +10,10 @@ let ListFolders = FOLDERPATH |> Directory.EnumerateDirectories
 
 ListFolders.ToArray()
 
-
-let folderfullpathname = """output\folders\2009-09-21-cache-de-disco"""
-
 let CreateImageDirectory name =
     let imagename = (name + "\\images")
     Directory.CreateDirectory imagename |> ignore
     imagename
-
-//let foldername = folderfullpathname.Substring(FOLDERPATH.Length)
 
 let ReadIndexHtml path =
     let indexfile = sprintf "%s\\%s" path INDEXFILENAME
