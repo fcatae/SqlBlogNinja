@@ -76,5 +76,5 @@ let printFile =
                 yield sprintf "- [%s](%s)" post.Title post.Link
                 yield ""
     }
-    File.WriteAllLines("readme.md", lines)
+    File.WriteAllLines("index.md", lines)
     
