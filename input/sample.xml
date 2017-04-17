@@ -55,5 +55,123 @@
 		<wp:category_parent><![CDATA[sql]]></wp:category_parent>
 		<wp:cat_name><![CDATA[01 Processor]]></wp:cat_name>
 	</wp:category>
+
+	<item>
+		<title>DBCC DBREINDEX</title>
+		<link>https://blogs.msdn.microsoft.com/fcatae/2016/05/10/dbcc-dbreindex/</link>
+		<pubDate>Tue, 10 May 2016 12:00:00 +0000</pubDate>
+		<dc:creator><![CDATA[fabricio catae]]></dc:creator>
+		<guid isPermaLink="false">https://blogs.msdn.microsoft.com/fcatae/2016/05/10/dbcc-dbreindex/</guid>
+		<description></description>
+		<content:encoded><![CDATA[<p>Esse &eacute; mais um artigo da s&eacute;rie &ldquo;Saga da otimiza&ccedil;&atilde;o com comandos antigos&rdquo;<ul>   <li>Parte 1: <a href="http://blogs.msdn.com/b/fcatae/archive/2016/03/22/set-statistics-io.aspx">SET STATISTICS IO</a></li>    <li>Parte 2: <a href="http://blogs.msdn.com/b/fcatae/archive/2016/03/29/dbcc-dropcleanbuffers.aspx">DBCC DROPCLEANBUFFERS</a></li>    <li>Parte 3: <a href="http://blogs.msdn.com/b/fcatae/archive/2016/04/05/dbcc-showcontig.aspx">DBCC SHOWCONTIG</a></li>    <li>Parte 4: <a href="http://blogs.msdn.com/b/fcatae/archive/2016/04/12/dbcc-page.aspx">DBCC PAGE</a></li>    <li>Parte 5: <a href="http://blogs.msdn.com/b/fcatae/archive/2016/04/19/sp-spaceused.aspx">sp_spaceused</a></li>    <li>Parte 6: <a href="http://blogs.msdn.com/b/fcatae/archive/2016/04/26/dbcc-ind.aspx">DBCC IND</a></li>    <li>Parte 7: <a href="http://blogs.msdn.com/b/fcatae/archive/2016/05/03/dbcc-indexdefrag.aspx">DBCC INDEXDEFRAG</a></li> </ul><p>No &uacute;ltimo artigo, comparamos o <a href="http://blogs.msdn.com/b/fcatae/archive/2016/05/03/dbcc-indexdefrag.aspx">INDEX SCAN e HEAP SCAN</a> e mostramos que o Heap Scan tem melhor desempenho.</p><h3>Impacto do Clustered Index</h3><p>O exemplo do artigo anterior, criamos uma tabela de produto e adicionamos um &iacute;ndice clustered sobre o campo &ldquo;nome&rdquo;.</p><blockquote>   <p><a href="https://msdnshared.blob.core.windows.net/media/MSDNBlogsFS/prod.evol.blogs.msdn.com/CommunityServer.Blogs.Components.WeblogFiles/00/00/01/28/29/metablogapi/1323.image_1D9B02C8.png"><img title="image" style="border-top: 0px;border-right: 0px;border-bottom: 0px;padding-top: 0px;padding-left: 0px;border-left: 0px;padding-right: 0px" border="0" alt="image" src="https://msdnshared.blob.core.windows.net/media/MSDNBlogsFS/prod.evol.blogs.msdn.com/CommunityServer.Blogs.Components.WeblogFiles/00/00/01/28/29/metablogapi/6153.image_thumb_20BB4195.png" width="401" height="147"></a></p> </blockquote><p>Adicionamos 10.000 registros aleat&oacute;rios:</p><blockquote>   <p><a href="https://msdnshared.blob.core.windows.net/media/MSDNBlogsFS/prod.evol.blogs.msdn.com/CommunityServer.Blogs.Components.WeblogFiles/00/00/01/28/29/metablogapi/8081.image_13C5C13F.png"><img title="image" style="border-top: 0px;border-right: 0px;border-bottom: 0px;padding-top: 0px;padding-left: 0px;border-left: 0px;padding-right: 0px" border="0" alt="image" src="https://msdnshared.blob.core.windows.net/media/MSDNBlogsFS/prod.evol.blogs.msdn.com/CommunityServer.Blogs.Components.WeblogFiles/00/00/01/28/29/metablogapi/6354.image_thumb_5CEB6CF8.png" width="324" height="149"></a></p> </blockquote><p>No final, temos uma tabela com 15MB.</p><blockquote>   <p><a href="https://msdnshared.blob.core.windows.net/media/MSDNBlogsFS/prod.evol.blogs.msdn.com/CommunityServer.Blogs.Components.WeblogFiles/00/00/01/28/29/metablogapi/2161.image_7823C5F9.png"><img title="image" style="border-top: 0px;border-right: 0px;border-bottom: 0px;padding-top: 0px;padding-left: 0px;border-left: 0px;padding-right: 0px" border="0" alt="image" src="https://msdnshared.blob.core.windows.net/media/MSDNBlogsFS/prod.evol.blogs.msdn.com/CommunityServer.Blogs.Components.WeblogFiles/00/00/01/28/29/metablogapi/2273.image_thumb_135C1EFB.png" width="386" height="132"></a></p> </blockquote><p>O resultado final foram 1828ms e 1.900 leituras em disco.</p><p><a href="https://msdnshared.blob.core.windows.net/media/MSDNBlogsFS/prod.evol.blogs.msdn.com/CommunityServer.Blogs.Components.WeblogFiles/00/00/01/28/29/metablogapi/4555.image_6E5E5E81.png"><img title="image" style="border-top: 0px;border-right: 0px;border-bottom: 0px;padding-top: 0px;padding-left: 0px;border-left: 0px;padding-right: 0px" border="0" alt="image" src="https://msdnshared.blob.core.windows.net/media/MSDNBlogsFS/prod.evol.blogs.msdn.com/CommunityServer.Blogs.Components.WeblogFiles/00/00/01/28/29/metablogapi/1374.image_thumb_697BAAC5.png" width="644" height="168"></a></p><p>Podemos resolver o problema rodando o comando DBCC DBREINDEX (obsoleto) ou sua nova vers&atilde;o ALTER INDEX REBUILD:</p><blockquote>   <p><strong>ALTER INDEX nome_indice ON produtos REBUILD</strong></p> </blockquote><p>A tabela desfragmentada fica em 10MB e o tempo de execu&ccedil;&atilde;o da query &eacute; de 900ms.</p><h3>Organizando a Tabela</h3><p>A heap consumia os mesmos 10MB, pois n&atilde;o fragmentava. A query executava em 892ms e realizava 1257 leituras em disco. Ent&atilde;o, se o Heap Scan tem melhor desempenho, ent&atilde;o por que criar um Clustered Index? </p><p>Como vimos no artigo anterior, <a href="http://blogs.msdn.com/b/fcatae/archive/2016/05/03/dbcc-indexdefrag.aspx">n&atilde;o vale a pena criar um &iacute;ndice clustered apenas por criar</a>. </p><p>&Eacute; essencial que a escolha da chave para Clustered Index siga as recomenda&ccedil;&otilde;es:</p><ul>   <li>Pouca altera&ccedil;&atilde;o (UPDATE) &ndash; mais importante!</li>    <li>Campos pequenos (at&eacute; 8 bytes)</li>    <li>Valores sequenciais</li>    <li>Valores distintos</li> </ul><p>No nosso exemplo, h&aacute; dois problemas em criar um &iacute;ndice clustered usando a chave &ldquo;nome&rdquo;: 1) valor n&atilde;o-sequencial, causando a fragmenta&ccedil;&atilde;o natural da tabela. 2) campo longo (800 bytes), que causar&aacute; futuro problemas com &iacute;ndices non-clustered.</p><p>Vou citar 3 motivos para criar um Clustered Index:</p><h3>1. Evitar problemas da Heap</h3><p>Embora o heap scan tenha melhor desempenho, a heap esconde alguns problemas:</p><ul>   <li>Conten&ccedil;&atilde;o de PFS</li>    <li>Forwarding records (ver <a href="http://blogs.msdn.com/b/fcatae/archive/2016/04/12/dbcc-page.aspx">Parte 4: DBCC PAGE</a>) </li>    <li>Space Allocation (ver <a href="http://blogs.msdn.com/b/fcatae/archive/2016/04/19/sp-spaceused.aspx">Parte 5: sp_spaceused</a>)</li> </ul><p>Por isso, recomendamos criar um clustered index evita esses comportamentos ex&oacute;ticos da Heap. </p><p>Campos Identity s&atilde;o boas escolhas porque s&atilde;o campos pequenos (tipo INTEGER), sequenciais e distintos.</p><h3>2. Per&iacute;odo de Dados</h3><p>Frequentemente encontramos consultas com filtros de data. Quando &eacute; necess&aacute;rio ler uma grande quantidade de dados, o &iacute;ndice clustered pode agregar os dados pr&oacute;ximos e facilitar as opera&ccedil;&otilde;es de scan.</p><blockquote>   <p>SELECT * FROM tabela WHERE data_inicio between &lsquo;2016-05-01&rsquo; AND &lsquo;2016-05-10&rsquo;</p> </blockquote><p>Campos de data s&atilde;o pequenos e normalmente inseridos sequencialmente. Ao criar um &iacute;ndice clustered, a tabela fica ordenada pela data e facilita as buscas com per&iacute;odo de tempo. No exemplo acima, somente os dados do m&ecirc;s de maio ser&atilde;o lidos, sem a necessidade de consultar a tabela inteira e acessar dados dos meses de abril, mar&ccedil;o, fevereiro, janeiro.</p><h3>3. Ordena&ccedil;&atilde;o de Consulta</h3><p>Quando encontramos consultas usando ORDER BY, podemos sugerir a cria&ccedil;&atilde;o do campo como clustered index.</p><blockquote>   <p>SELECT * FROM tabela ORDER BY Data</p> </blockquote><p>Ao criar um &iacute;ndice clustered, deixamos a tabela pr&eacute;-ordenada pelo campo chave. Dessa forma, economizamos o recurso de CPU e mem&oacute;ria necess&aacute;rio para ordenar os registros em tempo de execu&ccedil;&atilde;o. Entretanto, &eacute; importante que a chave tenha pouca (ou nenhuma) altera&ccedil;&atilde;o.</p><p>Exemplos ruins:</p><blockquote>   <p>SELECT * FROM tabela ORDER BY ultima_modificacao</p>    <p>SELECT * FROM tabela ORDER BY preco DESC</p> </blockquote><p>N&atilde;o adianta criar &iacute;ndices clustered para os campos &ldquo;ultima_modificacao&rdquo; e &ldquo;preco&rdquo;, pois esses s&atilde;o campos que sofrem UPDATE frequentes.</p><h3>E as Primary Key?</h3><p>Geralmente uma Primary Key deve adotar um &iacute;ndice Non-Clustered (NCL).</p><p>Entretanto, existem casos para adotar um Clustered Index (CL) em uma Primary Key (PK):</p><ul>   <li>Se a Primary Key for um campo IDENTITY, ent&atilde;o &eacute; uma boa escolha para &iacute;ndice CL. </li>    <li>Em banco de dados OLAP, opera&ccedil;&otilde;es de JOIN com grande volume de dados podem se beneficiar de &iacute;ndices CL</li> </ul><p>Por outro lado, h&aacute; um incont&aacute;vel n&uacute;mero de exemplos onde as Primary Keys s&atilde;o criadas como Clustered Index indevidamente, causando problema de fragmenta&ccedil;&atilde;o e impacto na performance.</p><h3>Evite fragmentar o Clustered Index</h3><p>A regra &eacute; simples: evite fragmentar o clustered index e tenha o desempenho igual a Heap.</p><p>Se essa regra for seguida, eliminamos os tr&ecirc;s problemas escondidos da heap:</p><ul>   <li>Conten&ccedil;&atilde;o de PFS</li>    <li>Forwarding records (ver <a href="http://blogs.msdn.com/b/fcatae/archive/2016/04/12/dbcc-page.aspx">Parte 4: DBCC PAGE</a>) </li>    <li>Space Allocation (ver <a href="http://blogs.msdn.com/b/fcatae/archive/2016/04/19/sp-spaceused.aspx">Parte 5: sp_spaceused</a>)</li> </ul><p>No pr&oacute;ximo artigo, vamos explorar um pouco mais sobre os &iacute;ndices. At&eacute; o momento, falamos apenas sobre o comparativo do Heap scan e Index scan. Entretanto, a vantagem do &iacute;ndice &eacute; usar algo muito mais r&aacute;pido que o scan.</p></p>
+]]></content:encoded>
+		<excerpt:encoded><![CDATA[]]></excerpt:encoded>
+		<wp:post_id>1211</wp:post_id>
+		<wp:post_date><![CDATA[2016-05-10 09:00:00]]></wp:post_date>
+		<wp:post_date_gmt><![CDATA[2016-05-10 12:00:00]]></wp:post_date_gmt>
+		<wp:comment_status><![CDATA[open]]></wp:comment_status>
+		<wp:ping_status><![CDATA[closed]]></wp:ping_status>
+		<wp:post_name><![CDATA[dbcc-dbreindex]]></wp:post_name>
+		<wp:status><![CDATA[publish]]></wp:status>
+		<wp:post_parent>0</wp:post_parent>
+		<wp:menu_order>1</wp:menu_order>
+		<wp:post_type><![CDATA[post]]></wp:post_type>
+		<wp:post_password><![CDATA[]]></wp:post_password>
+		<wp:is_sticky>0</wp:is_sticky>
+		<category domain="category" nicename="data-structures"><![CDATA[05 Data Structures]]></category>
+		<category domain="post_tag" nicename="bpool"><![CDATA[BPool]]></category>
+		<category domain="post_tag" nicename="performance"><![CDATA[Performance]]></category>
+		<category domain="post_tag" nicename="query"><![CDATA[Query]]></category>
+		<category domain="post_tag" nicename="regras"><![CDATA[Regras]]></category>
+		<category domain="category" nicename="sql"><![CDATA[SQL]]></category>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_url]]></wp:meta_key>
+			<wp:meta_value><![CDATA[http://blogs.msdn.microsoft.com/b/fcatae/archive/2016/05/10/dbcc-dbreindex.aspx]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_site_id]]></wp:meta_key>
+			<wp:meta_value><![CDATA[12829]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_post_id]]></wp:meta_key>
+			<wp:meta_value><![CDATA[10662206]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_post_name]]></wp:meta_key>
+			<wp:meta_value><![CDATA[dbcc dbreindex]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_parent_id]]></wp:meta_key>
+			<wp:meta_value><![CDATA[10662206]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_thread_id]]></wp:meta_key>
+			<wp:meta_value><![CDATA[901087]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[_wds_ratings_users]]></wp:meta_key>
+			<wp:meta_value><![CDATA[1]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_application_key]]></wp:meta_key>
+			<wp:meta_value><![CDATA[fcatae]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_post_author_id]]></wp:meta_key>
+			<wp:meta_value><![CDATA[97147]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_post_author_username]]></wp:meta_key>
+			<wp:meta_value><![CDATA[fcatae]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_post_author_email]]></wp:meta_key>
+			<wp:meta_value><![CDATA[fabricio.catae@microsoft.com]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_post_author_created]]></wp:meta_key>
+			<wp:meta_value><![CDATA[2007-08-27 17:43:48.000]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_is_approved]]></wp:meta_key>
+			<wp:meta_value><![CDATA[1]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[orig_attachment_count]]></wp:meta_key>
+			<wp:meta_value><![CDATA[0]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[total_views]]></wp:meta_key>
+			<wp:meta_value><![CDATA[7]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[_wds_ratings_score]]></wp:meta_key>
+			<wp:meta_value><![CDATA[5]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[_wds_ratings_average]]></wp:meta_key>
+			<wp:meta_value><![CDATA[5]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[_edit_last]]></wp:meta_key>
+			<wp:meta_value><![CDATA[9572]]></wp:meta_value>
+		</wp:postmeta>
+		<wp:postmeta>
+			<wp:meta_key><![CDATA[opengraph_tags]]></wp:meta_key>
+			<wp:meta_value><![CDATA[<meta property="og:type" content="article" />
+<meta property="og:title" content="" />
+<meta property="og:url" content="" />
+<meta property="og:site_name" content="SQL Blog Ninja - Fabricio Catae" />
+<meta property="og:description" content="" />
+<meta property="og:image" content="http://blogs.msdn.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-28-29-metablogapi/6153.image_5F00_thumb_5F00_20BB4195.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="" />
+<meta name="twitter:url" content="" />
+<meta name="twitter:description" content="" />
+<meta name="twitter:image" content="http://blogs.msdn.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-28-29-metablogapi/6153.image_5F00_thumb_5F00_20BB4195.png" />
+]]></wp:meta_value>
+		</wp:postmeta>
+	</item>
+	
     </channel>
     </rss>
