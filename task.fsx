@@ -7,12 +7,20 @@ let FILE_WORDPRESS_XML = "input\\sample.xml"
 
 let doc = XDocument.Load FILE_WORDPRESS_XML 
 
+let xName = XName.Get
+
+let item = query {
+        for de in doc.Descendants(xName "item") do
+            select de.Name
+    }
+
+item.ToArray()
+
 let de = doc.Elements()
 
 de.First().
 
 
-let xName = XName.Get
 
 de.Descendants(xName "item") 
 |> Seq.map(fun (x: XElement)-> x.Elements(xName "title").First().Name )
